@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Správa serverů{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Správa serverů</h1>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-back">
+            <i class="bi bi-arrow-left"></i> Zpět na přehled
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success fade-in">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Formulář pro přidání serveru -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Přidat nový server</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('pridat_server') }}" class="d-flex gap-3">
+                <input type="text" name="server" class="form-control" 
+                       placeholder="Název serveru" required
+                       oninput="checkInput(this, 'addServerBtn')">
+                <button type="submit" id="addServerBtn" class="btn btn-primary btn-sm" disabled>
+                    <i class="bi bi-plus-lg"></i> Přidat server
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Seznam serverů -->
+    <div class="card w-100">
+        <div class="card-header">
+            <h4>Seznam serverů</h4>
+        </div>
+        <div class="card-body p-0">
+            {% if servery %}
+            <div class="table-responsive">
+                <table class="table table-hover server-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Název serveru</th>
+                            <th>Počet certifikátů</th>
+                            <th class="text-end">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for server in servery %}
+                        <tr>
+                            <td class="text-break">{{ server.nazev }}</td>
+                            <td>{{ pocty[server.nazev] }}</td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('index', server=server.nazev) }}" 
+                                       class="btn btn-sm btn-info text-white">
+                                        <i class="bi bi-eye"></i> Zobrazit
+                                    </a>
+                                    <a href="{{ url_for('smazat_server', server=server.nazev) }}" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Opravdu chcete smazat server {{ server.nazev }} a všechny jeho certifikáty?')">
+                                        <i class="bi bi-trash"></i> Smazat
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info m-3">
+                Zatím nejsou přidány žádné servery.
+            </div>
+            {% endif %}
+        </div>
+        {% if servery %}
+        <div class="card-footer bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Celkem serverů:</strong> {{ statistiky.celkem_serveru }}
+                </div>
+                <div>
+                    <strong>Celkem certifikátů:</strong> {{ statistiky.celkem_certifikatu }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Přidáme JavaScript na konec souboru -->
+<script>
+function checkInput(input, buttonId) {
+    const button = document.getElementById(buttonId);
+    button.disabled = !input.value.trim();
+}
+</script>
+{% endblock %} 
