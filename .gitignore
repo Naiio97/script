@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# SQLite databáze
+*.db
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+
+# Ostatní
+.DS_Store
+*.log
+uploads/ 

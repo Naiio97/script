@@ -80,12 +80,19 @@ function checkFormInputs() {
     const expirace = document.getElementById('expirace').value.trim();
     
     const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = !(server && cesta && nazev && expirace);
+    if (submitBtn) {
+        submitBtn.disabled = !(server && cesta && nazev && expirace);
+    }
 }
 
 // Při načtení stránky spustíme kontrolu
 document.addEventListener('DOMContentLoaded', function() {
-    checkFormInputs();
+    if (document.getElementById('server') && 
+        document.getElementById('cesta') && 
+        document.getElementById('nazev') && 
+        document.getElementById('expirace')) {
+        checkFormInputs();
+    }
 });
 </script>
 {% endblock %} 
