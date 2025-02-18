@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Import z Excelu{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>Import certifikátů z Excelu</h1>
+        <a href="{{ url_for('index') }}" class="button info">
+            <i class="fas fa-arrow-left"></i>
+            Zpět na přehled
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="info-message {% if 'error' in message.lower() %}error{% else %}success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="import-card">
+        <div class="card-header">
+            <h2>Nahrát Excel soubor</h2>
+        </div>
+        <div class="card-content">
+            <form method="POST" enctype="multipart/form-data" class="import-form">
+                <div class="form-group">
+                    <label for="excel_file">Vyberte Excel soubor</label>
+                    <input type="file" id="excel_file" name="excel_file" 
+                           accept=".xlsx,.xls"
+                           required>
+                    <small class="help-text">Podporované formáty: .xlsx, .xls</small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="button primary">
+                        <i class="fas fa-file-import"></i>
+                        Importovat data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

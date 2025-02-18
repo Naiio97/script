@@ -3,107 +3,98 @@
 {% block title %}Přehled končících certifikátů{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Přehled končících certifikátů</h1>
-            <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-back">
-                <i class="bi bi-arrow-left"></i> Zpět na přehled
-            </a>
-        </div>
+<div class="dashboard-container">
+    <div class="header">
+        <h1>Dashboard</h1>
+        <a href="{{ url_for('index') }}" class="button info">
+            <i class="fas fa-arrow-left"></i>
+            Zpět na přehled
+        </a>
+    </div>
 
-        <!-- Statistiky -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card stat-card critical hover-lift">
-                    <div class="stat-number critical">{{ stats.critical }}</div>
-                    <div class="text-muted">Končí tento měsíc</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card warning hover-lift">
-                    <div class="stat-number warning">{{ stats.warning }}</div>
-                    <div class="text-muted">Končí do dvou měsíců</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card info hover-lift">
-                    <div class="stat-number info">{{ stats.this_year }}</div>
-                    <div class="text-muted">Končí tento rok</div>
-                </div>
-            </div>
+    <!-- Statistiky -->
+    <div class="stats-grid">
+        <div class="stat-card critical">
+            <div class="stat-number">{{ stats.critical }}</div>
+            <div class="stat-label">Končí tento měsíc</div>
         </div>
-
-        <!-- Seznam končících certifikátů -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h4>Končící certifikáty</h4>
-            </div>
-            <div class="card-body">
-                {% if ending_certs %}
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Server</th>
-                                <th>Název certifikátu</th>
-                                <th>Expirace</th>
-                                <th>Zbývá dnů</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for cert in ending_certs %}
-                            {% set days_left = (cert.expirace - today).days %}
-                            <tr class="{% if days_left <= 30 %}expiring-critical
-                                       {% elif days_left <= 60 %}expiring-warning
-                                       {% else %}expiring-info{% endif %}">
-                                <td>{{ cert.server }}</td>
-                                <td>{{ cert.nazev }}</td>
-                                <td>{{ cert.expirace.strftime('%d.%m.%Y') }}</td>
-                                <td>
-                                    <span class="badge {% if days_left <= 30 %}bg-danger
-                                                      {% elif days_left <= 60 %}bg-warning
-                                                      {% else %}bg-info{% endif %}">
-                                        {{ days_left }} dnů
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="alert alert-success">
-                    Žádné certifikáty nekončí v tomto roce.
-                </div>
-                {% endif %}
-            </div>
+        <div class="stat-card warning">
+            <div class="stat-number">{{ stats.warning }}</div>
+            <div class="stat-label">Končí do dvou měsíců</div>
         </div>
-
-        <!-- Statistiky podle serverů -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h4>Končící certifikáty podle serverů</h4>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Server</th>
-                                <th>Počet končících certifikátů</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for server, count in server_stats %}
-                            <tr>
-                                <td>{{ server }}</td>
-                                <td>{{ count }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="stat-card info">
+            <div class="stat-number">{{ stats.this_year }}</div>
+            <div class="stat-label">Končí tento rok</div>
         </div>
     </div>
+
+    <!-- Seznam končících certifikátů -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2>Končící certifikáty</h2>
+        </div>
+        <div class="card-content">
+            {% if ending_certs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Server</th>
+                        <th>Název certifikátu</th>
+                        <th>Expirace</th>
+                        <th>Zbývá dnů</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cert in ending_certs %}
+                    {% set days_left = (cert.expirace - today).days %}
+                    <tr class="{% if days_left <= 30 %}expiring-critical
+                               {% elif days_left <= 60 %}expiring-warning
+                               {% else %}expiring-info{% endif %}">
+                        <td>{{ cert.server }}</td>
+                        <td>{{ cert.nazev }}</td>
+                        <td>{{ cert.expirace.strftime('%d.%m.%Y') }}</td>
+                        <td>
+                            <span class="days-badge {% if days_left <= 30 %}critical
+                                          {% elif days_left <= 60 %}warning
+                                          {% else %}info{% endif %}">
+                                {{ days_left }} dnů
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="info-message success">
+                Žádné certifikáty nekončí v tomto roce.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistiky podle serverů -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2>Končící certifikáty podle serverů</h2>
+        </div>
+        <div class="card-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Server</th>
+                        <th>Počet končících certifikátů</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for server, count in server_stats %}
+                    <tr>
+                        <td>{{ server }}</td>
+                        <td>{{ count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %} 

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Certifikat, Server
 from datetime import datetime, timedelta
@@ -7,6 +7,8 @@ from openpyxl import Workbook
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
+import re
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 # Přidáme debug výpisy
@@ -14,6 +16,11 @@ app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'tajny_klic'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///certifikaty.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Přidáme konfiguraci pro upload souborů
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
 
 # Inicializace databáze
 db.init_app(app)
@@ -32,6 +39,16 @@ def index():
         if aktivni_server:
             certifikaty = Certifikat.query.filter_by(server=aktivni_server)\
                 .order_by(Certifikat.expirace).all()
+            
+            # Odstraníme duplicity pomocí slovníku
+            unique_certs = {}
+            for cert in certifikaty:
+                key = (cert.server, cert.nazev, cert.cesta)
+                if key not in unique_certs or cert.expirace < unique_certs[key].expirace:
+                    unique_certs[key] = cert
+            
+            certifikaty = list(unique_certs.values())
+            certifikaty.sort(key=lambda x: x.expirace)
         else:
             certifikaty = []
             
@@ -40,17 +57,23 @@ def index():
                              servery=servery_nazvy, 
                              aktivni_server=aktivni_server)
     except Exception as e:
-        print(f"Chyba: {str(e)}")
         return f"Došlo k chybě: {str(e)}", 500
 
 @app.route('/pridat', methods=['GET', 'POST'])
 def pridat_certifikat():
     if request.method == 'POST':
+        # Převedeme formát dd.mm.yy na datetime
+        try:
+            expirace = datetime.strptime(request.form['expirace'], '%d.%m.%Y')
+        except ValueError:
+            flash('Neplatný formát data! Použijte formát dd.mm.yyyy')
+            return redirect(url_for('pridat_certifikat'))
+
         novy_cert = Certifikat(
             server=request.form['server'],
             cesta=request.form['cesta'],
             nazev=request.form['nazev'],
-            expirace=datetime.strptime(request.form['expirace'], '%Y-%m-%d'),
+            expirace=expirace,
             poznamka=request.form.get('poznamka', '')
         )
         db.session.add(novy_cert)
@@ -58,23 +81,56 @@ def pridat_certifikat():
         flash('Certifikát byl úspěšně přidán!')
         return redirect(url_for('index'))
     
-    # Získáme seznam všech serverů pro select
-    servery = Server.query.order_by(Server.nazev).all()
-    return render_template('formular.html', servery=servery)
+    servery = Server.query.all()
+    return render_template('formular.html', certifikat=None, servery=servery)
 
 @app.route('/upravit/<int:id>', methods=['GET', 'POST'])
 def upravit_certifikat(id):
-    certifikat = Certifikat.query.get_or_404(id)
-    if request.method == 'POST':
-        certifikat.server = request.form['server']
-        certifikat.cesta = request.form['cesta']
-        certifikat.nazev = request.form['nazev']
-        certifikat.expirace = datetime.strptime(request.form['expirace'], '%Y-%m-%d')
-        certifikat.poznamka = request.form.get('poznamka', '')
-        db.session.commit()
-        flash('Certifikát byl úspěšně upraven!')
+    try:
+        certifikat = Certifikat.query.get_or_404(id)
+        servery = Server.query.all()
+        
+        if request.method == 'POST':
+            print("POST request přijat")
+            print("Form data:", request.form)
+            
+            server = request.form['server']
+            cesta = request.form['cesta']
+            nazev = request.form['nazev']
+            expirace_str = request.form['expirace']
+            poznamka = request.form.get('poznamka', '')
+            
+            print(f"Data před uložením:")
+            print(f"Server: {server}")
+            print(f"Cesta: {cesta}")
+            print(f"Název: {nazev}")
+            print(f"Expirace: {expirace_str}")
+            print(f"Poznámka: {poznamka}")
+            
+            try:
+                expirace = datetime.strptime(expirace_str, '%d.%m.%Y')
+                
+                certifikat.server = server
+                certifikat.cesta = cesta
+                certifikat.nazev = nazev
+                certifikat.expirace = expirace
+                certifikat.poznamka = poznamka
+                
+                db.session.commit()
+                print("Data úspěšně uložena")
+                flash('Certifikát byl úspěšně upraven', 'success')
+                return redirect(url_for('index'))
+            except Exception as e:
+                print(f"Chyba při ukládání: {str(e)}")
+                db.session.rollback()
+                flash(f'Chyba při úpravě certifikátu: {str(e)}', 'error')
+                return render_template('formular.html', certifikat=certifikat, servery=servery)
+        
+        return render_template('formular.html', certifikat=certifikat, servery=servery)
+    except Exception as e:
+        print(f"Obecná chyba: {str(e)}")
+        flash(f'Chyba při načítání certifikátu: {str(e)}', 'error')
         return redirect(url_for('index'))
-    return render_template('formular.html', certifikat=certifikat)
 
 @app.route('/smazat/<int:id>')
 def smazat_certifikat(id):
@@ -96,59 +152,112 @@ def smazat_vse():
         db.session.rollback()
     return redirect(url_for('index'))
 
-@app.route('/import-excel')
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/import-excel', methods=['GET', 'POST'])
 def import_excel():
-    try:
-        # Načtení Excel souboru
-        df = pd.read_excel("./certy_uat.xlsx")
+    if request.method == 'POST':
+        if 'excel_file' not in request.files:
+            flash('Nebyl vybrán žádný soubor')
+            return redirect(request.url)
         
-        # Debug výpis - podíváme se na názvy sloupců
-        print("Názvy sloupců v Excelu:", df.columns.tolist())
+        file = request.files['excel_file']
+        if file.filename == '':
+            flash('Nebyl vybrán žádný soubor')
+            return redirect(request.url)
         
-        # Vyplnění prázdných hodnot
-        df['Server'] = df['Server'].fillna(method='ffill')
-        df['Cesta'] = df['Cesta'].fillna(method='ffill')
-        
-        # Filtrování řádků (přeskočíme "Neřešíme" atd. a NaN hodnoty)
-        ignorovat = ["Neřešíme", "Neřešime", "Automaticky", "Automacticky", 
-                    "?????", "Expirace", "Expirace ", ""]
-        df = df[~df['Expirace'].astype(str).isin(ignorovat)]
-        
-        # Odstraníme řádky s NaN hodnotami v klíčových sloupcích
-        nazev_sloupce = 'Název certifikátu'  # Upravený název sloupce
-        df = df.dropna(subset=[nazev_sloupce, 'Expirace'])
-        
-        # Import každého řádku do databáze
-        pocet = 0
-        for _, radek in df.iterrows():
+        if file and allowed_file(file.filename):
             try:
-                # Převod data na správný formát
-                datum_expirace = pd.to_datetime(radek['Expirace']).date()
+                df = pd.read_excel(file)
+                updated = 0
+                added = 0
+                skipped = 0
                 
-                # Vytvoření nového záznamu
-                cert = Certifikat(
-                    server=str(radek['Server']),
-                    cesta=str(radek['Cesta']),
-                    nazev=str(radek[nazev_sloupce]),  # Použijeme správný název sloupce
-                    expirace=datum_expirace,
-                    poznamka=None
-                )
-                db.session.add(cert)
-                pocet += 1
+                # Kontrola názvů sloupců
+                required_columns = ['Server', 'Cesta', 'Název certifikátu', 'Expirace']
+                if not all(col in df.columns for col in required_columns):
+                    flash(f'Chybí povinné sloupce. Požadované sloupce: {", ".join(required_columns)}')
+                    return redirect(request.url)
+                
+                # Přeskočíme řádky s neplatnými hodnotami v Expirace
+                invalid_values = ["Neřešíme", "Neřešime", "Automaticky", "Automacticky", 
+                                "?????", "Expirace", "Expirace ", ""]
+                df = df[~df['Expirace'].astype(str).isin(invalid_values)]
+                
+                for _, row in df.iterrows():
+                    try:
+                        # Kontrola prázdných hodnot
+                        if pd.isna(row['Expirace']) or pd.isna(row['Název certifikátu']):
+                            continue
+                            
+                        # Převedeme pandas timestamp na Python datetime a nastavíme čas na půlnoc
+                        expirace = pd.to_datetime(row['Expirace']).to_pydatetime()
+                        expirace = datetime(expirace.year, expirace.month, expirace.day)
+                        
+                        server = str(row['Server']).strip()
+                        cesta = str(row['Cesta']).strip()
+                        nazev = str(row['Název certifikátu']).strip()
+                        
+                        # Zpracování poznámky - pokud je prázdná nebo None, nastavíme prázdný řetězec
+                        poznamka = row.get('Poznámka', '')
+                        if pd.isna(poznamka) or poznamka == 'None':
+                            poznamka = ''
+                        else:
+                            poznamka = str(poznamka).strip()
+                        
+                        existing = Certifikat.query.filter_by(
+                            server=server,
+                            cesta=cesta,
+                            nazev=nazev
+                        ).first()
+                        
+                        if existing:
+                            # Nastavíme čas existujícího záznamu také na půlnoc
+                            existing_date = datetime(existing.expirace.year, 
+                                                  existing.expirace.month, 
+                                                  existing.expirace.day)
+                            
+                            if existing_date != expirace:
+                                existing.expirace = expirace
+                                existing.poznamka = poznamka
+                                updated += 1
+                                db.session.commit()
+                            else:
+                                # Aktualizujeme pouze poznámku, pokud je rozdílná
+                                if existing.poznamka != poznamka:
+                                    existing.poznamka = poznamka
+                                    updated += 1
+                                    db.session.commit()
+                                else:
+                                    skipped += 1
+                        else:
+                            cert = Certifikat(
+                                server=server,
+                                cesta=cesta,
+                                nazev=nazev,
+                                expirace=expirace,
+                                poznamka=poznamka
+                            )
+                            db.session.add(cert)
+                            added += 1
+                            db.session.commit()
+                            
+                    except Exception as e:
+                        print(f"Chyba při zpracování řádku: {str(e)}")
+                        continue
+                
+                flash(f'Import dokončen: {added} záznamů přidáno, {updated} záznamů aktualizováno, {skipped} beze změny')
+                return redirect(url_for('index'))
+                
             except Exception as e:
-                print(f"Chyba při importu řádku: {str(e)}")
-                continue
-        
-        # Uložení všech změn
-        db.session.commit()
-        flash(f'Úspěšně importováno {pocet} certifikátů!')
-        
-    except Exception as e:
-        flash(f'Chyba při importu: {str(e)}', 'error')
-        db.session.rollback()
-        print(f"Detailní chyba: {str(e)}")  # Pro lepší debugování
+                flash(f'Chyba při importu: {str(e)}')
+                return redirect(request.url)
+        else:
+            flash('Povolené jsou pouze soubory .xlsx a .xls')
+            return redirect(request.url)
     
-    return redirect(url_for('index'))
+    return render_template('import.html')
 
 @app.route('/export-excel')
 def export_excel():
@@ -200,19 +309,18 @@ def export_excel():
         flash(f'Chyba při exportu do Excelu: {str(e)}', 'error')
         return redirect(url_for('index'))
 
-# Přidáme funkci pro určení třídy podle data expirace
+@app.template_filter('get_expiry_class')
 def get_expiry_class(cert):
     today = datetime.now().date()
-    expiry = cert.expirace
-    days_left = (expiry - today).days
+    expiry_date = cert.expirace
+    days_left = (expiry_date - today).days
     
-    if days_left <= 30:
-        return 'expiring-critical'
-    elif days_left <= 60:
+    if expiry_date < today or days_left <= 30:  # Prošlé nebo končí tento měsíc
+        return 'expired'
+    elif days_left <= 60:  # Končí příští měsíc
         return 'expiring-warning'
-    elif expiry.year == today.year:
-        return 'expiring-info'
-    return ''
+    else:
+        return ''
 
 # Přidáme funkci pro kontrolu certifikátů
 def check_certificates():
@@ -222,57 +330,51 @@ def check_certificates():
             expiring_certs = Certifikat.query.filter(
                 Certifikat.expirace <= today + timedelta(days=60)
             ).all()
-            
-            if expiring_certs:
-                # Zde můžete implementovat notifikace (email, Slack, atd.)
-                print(f"Nalezeno {len(expiring_certs)} certifikátů končících v příštích 60 dnech:")
-                for cert in expiring_certs:
-                    print(f"- {cert.server}: {cert.nazev} končí {cert.expirace.strftime('%d.%m.%Y')}")
         except Exception as e:
             print(f"Chyba při kontrole certifikátů: {str(e)}")
 
 # Nastavení plánovače
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=check_certificates, trigger="interval", seconds=30)  # kontrola každých 30 sekund
+scheduler.add_job(func=check_certificates, trigger="interval", hours=24)  # kontrola jednou denně místo každých 30 sekund
 scheduler.start()
 
 # Zastavení plánovače při ukončení aplikace
 atexit.register(lambda: scheduler.shutdown())
-
-# Přidáme filtr pro šablony
-app.jinja_env.filters['get_expiry_class'] = get_expiry_class
 
 @app.route('/dashboard')
 def dashboard():
     try:
         today = datetime.now().date()
         
-        # Statistiky pouze pro končící certifikáty
-        stats = {
-            'critical': Certifikat.query.filter(  # Končí tento měsíc
-                Certifikat.expirace.between(today, today + timedelta(days=30))
-            ).count(),
-            'warning': Certifikat.query.filter(   # Končí do dvou měsíců
-                Certifikat.expirace.between(today + timedelta(days=31), today + timedelta(days=60))
-            ).count(),
-            'this_year': Certifikat.query.filter( # Končí tento rok
-                Certifikat.expirace.between(today, datetime(today.year, 12, 31).date())
-            ).count()
-        }
-        
-        # Seznam certifikátů končících tento rok (již seřazený podle expirace)
+        # Získáme všechny končící certifikáty
         ending_certs = Certifikat.query.filter(
             Certifikat.expirace.between(today, datetime(today.year, 12, 31).date())
         ).order_by(Certifikat.expirace).all()
         
-        # Počet končících certifikátů podle serverů (seřazený podle počtu certifikátů)
-        server_stats = db.session.query(
-            Certifikat.server, 
-            db.func.count(Certifikat.id).label('count')
-        ).filter(
-            Certifikat.expirace.between(today, datetime(today.year, 12, 31).date())
-        ).group_by(Certifikat.server)\
-        .order_by(db.text('count DESC')).all()  # Seřazení podle počtu sestupně
+        # Odstraníme duplicity
+        unique_certs = {}
+        for cert in ending_certs:
+            key = (cert.server, cert.nazev, cert.cesta)  # klíč pro unikátnost
+            if key not in unique_certs or cert.expirace < unique_certs[key].expirace:
+                unique_certs[key] = cert
+        
+        ending_certs = list(unique_certs.values())
+        ending_certs.sort(key=lambda x: x.expirace)
+        
+        # Přepočítáme statistiky pro unikátní certifikáty
+        stats = {
+            'critical': sum(1 for cert in ending_certs if (cert.expirace - today).days <= 30),
+            'warning': sum(1 for cert in ending_certs if 30 < (cert.expirace - today).days <= 60),
+            'this_year': len(ending_certs)
+        }
+        
+        # Statistiky podle serverů (už jen pro unikátní certifikáty)
+        server_counts = {}
+        for cert in ending_certs:
+            server_counts[cert.server] = server_counts.get(cert.server, 0) + 1
+        
+        server_stats = [(server, count) for server, count in server_counts.items()]
+        server_stats.sort(key=lambda x: x[1], reverse=True)
         
         return render_template('dashboard.html', 
                              stats=stats,
@@ -287,7 +389,9 @@ def dashboard():
 def static_files(filename):
     response = send_from_directory('static', filename)
     if filename.endswith('.css'):
-        response.mimetype = 'text/css'
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
     return response
 
 @app.route('/servery')
@@ -352,13 +456,59 @@ def smazat_server(server):
         flash(f'Chyba při mazání serveru: {str(e)}', 'error')
     return redirect(url_for('sprava_serveru'))
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('static',
+                             'favicon.ico', 
+                             mimetype='image/vnd.microsoft.icon')
+
+@app.route('/get-certificates/<server>')
+def get_certificates(server):
+    try:
+        certifikaty = Certifikat.query.filter_by(server=server)\
+            .order_by(Certifikat.expirace).all()
+        
+        # Odstraníme duplicity
+        unique_certs = {}
+        for cert in certifikaty:
+            key = (cert.server, cert.nazev, cert.cesta)
+            if key not in unique_certs or cert.expirace < unique_certs[key].expirace:
+                unique_certs[key] = cert
+        
+        certifikaty = list(unique_certs.values())
+        certifikaty.sort(key=lambda x: x.expirace)
+        
+        # Převedeme certifikáty na JSON
+        certs_data = []
+        for cert in certifikaty:
+            certs_data.append({
+                'id': cert.id,
+                'server': cert.server,
+                'cesta': cert.cesta,
+                'nazev': cert.nazev,
+                'expirace': cert.expirace.strftime('%Y-%m-%d'),
+                'poznamka': cert.poznamka
+            })
+        
+        return jsonify(certs_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/detail/<int:id>')
+def detail_certifikatu(id):
+    try:
+        certifikat = Certifikat.query.get_or_404(id)
+        return render_template('detail.html', certifikat=certifikat)
+    except Exception as e:
+        flash(f'Chyba při načítání detailu: {str(e)}', 'error')
+        return redirect(url_for('index'))
+
 if __name__ == '__main__':
     with app.app_context():
         try:
-            # Vytvoření všech tabulek
             db.create_all()
-            print("Databáze byla úspěšně vytvořena")
         except Exception as e:
             print(f"Chyba při vytváření databáze: {str(e)}")
     
-    app.run(debug=True, port=5002) 
+    # Zapneme debug mode
+    app.run(debug=True, port=5000) 

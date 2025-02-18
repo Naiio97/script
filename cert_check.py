@@ -8,8 +8,8 @@ def nacti_excel(cesta_k_souboru):
         df = pd.read_excel(cesta_k_souboru)
         
         # Vyplnění prázdných hodnot hodnotou z předchozího řádku
-        df['Server'] = df['Server'].fillna(method='ffill')
-        df['Cesta'] = df['Cesta'].fillna(method='ffill')
+        df['Server'] = df['Server'].ffill()
+        df['Cesta'] = df['Cesta'].ffill()
         
         print("\nNázvy sloupců v Excel souboru:")
         print(df.columns.tolist())
