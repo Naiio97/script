@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="error-page">
+    <h1>Interní chyba serveru (500)</h1>
+    <p>Omlouváme se, došlo k chybě na serveru.</p>
+    <a href="{{ url_for('index') }}" class="button primary">Zpět na hlavní stránku</a>
+</div>
+{% endblock %} 

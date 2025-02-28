@@ -6,23 +6,47 @@
 <!-- Toolbar s tlačítky -->
 <div class="toolbar">
     <div class="button-group">
-        <a href="{{ url_for('pridat_certifikat') }}" class="button success">
+        <a href="{{ url_for('pridat_certifikat') }}" class="button primary">
             <i class="fas fa-plus"></i>
             Přidat certifikát
+        </a>
+        <button onclick="toggleImport()" class="button info">
+            <i class="fas fa-file-import"></i>
+            Import z Excelu
+        </button>
+        <a href="{{ url_for('export_excel') }}" class="button success">
+            <i class="fas fa-file-export"></i>
+            Export do Excelu
         </a>
         <a href="{{ url_for('dashboard') }}" class="button info">
             <i class="fas fa-chart-bar"></i>
             Dashboard
         </a>
-        <a href="{{ url_for('sprava_serveru') }}" class="button secondary">
+        <a href="{{ url_for('servery') }}" class="button secondary">
             <i class="fas fa-server"></i>
             Správa serverů
         </a>
-        <a href="{{ url_for('import_excel') }}" class="button primary">
-            <i class="fas fa-file-excel"></i>
-            Import z Excelu
-        </a>
+        <button onclick="smazatDB()" class="button danger">
+            <i class="fas fa-trash"></i>
+            Smazat DB
+        </button>
     </div>
+</div>
+
+<!-- Informační hláška -->
+<div id="importMessage" class="import-message"></div>
+
+<!-- Import formulář -->
+<div id="importForm" class="import-form" style="display: none;">
+    <form method="POST" action="{{ url_for('import_excel') }}" enctype="multipart/form-data" onsubmit="handleImport(event)">
+        <div class="inline-form">
+            <input type="file" id="excel_file" name="excel_file" accept=".xlsx,.xls" required>
+            <button type="submit" class="button primary">
+                <i class="fas fa-upload"></i>
+                Importovat
+            </button>
+        </div>
+    </form>
 </div>
 
 <!-- Navigace serverů -->
@@ -35,7 +59,6 @@
         </a>
         {% endfor %}
     </div>
-
 
 <!-- Tabulka certifikátů -->
 <div class="table-container">
@@ -55,17 +78,17 @@
                 <td>{{ cert.server }}</td>
                 <td>{{ cert.cesta }}</td>
                 <td>{{ cert.nazev }}</td>
-                <td class="date">{{ cert.expirace.strftime('%d.%m.%Y') }}</td>
+                <td>{{ cert.expirace.strftime('%d.%m.%Y') }}</td>
                 <td class="actions">
-                    <button class="button small info" onclick="zobrazitDetail('{{ cert.id }}')" title="Detail">
+                    <a class="button small info" onclick="zobrazitDetail('{{ cert.id }}')" title="Detail">
                         <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="button small primary" onclick="upravitCertifikat('{{ cert.id }}')" title="Upravit">
+                    </a>
+                    <a class="button small primary" onclick="upravitCertifikat('{{ cert.id }}')" title="Upravit">
                         <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="button small danger" onclick="smazatCertifikat('{{ cert.id }}')" title="Smazat">
+                    </a>
+                    <a class="button small danger" onclick="smazatCertifikat('{{ cert.id }}')" title="Smazat">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </a>
                 </td>
             </tr>
             {% endfor %}
@@ -73,5 +96,16 @@
     </table>
 </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+<!-- Modální okno pro detail -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detail certifikátu</h2>
+            <button class="close-button" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <!-- Sem se načte obsah detailu -->
+        </div>
+    </div>
+</div>
 {% endblock %} 

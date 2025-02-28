@@ -1,0 +1,79 @@
+2025-02-20 11:31:03,738 INFO: Aplikace spuštìna [in C:\Users\uzivatel\Documents\script-1\app.py:34]
+2025-02-20 11:33:20,074 INFO: Aplikace spuštìna [in C:\Users\uzivatel\Documents\script-1\app.py:34]
+2025-02-20 11:33:20,095 INFO: Vytvoøena nová databáze [in C:\Users\uzivatel\Documents\script-1\app.py:545]
+2025-02-20 11:34:04,572 INFO: Import souboru: certy_uat.xlsx [in C:\Users\uzivatel\Documents\script-1\app.py:192]
+2025-02-20 11:34:04,573 INFO: Pùvodní sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:193]
+2025-02-20 11:34:04,573 INFO: Celkový poèet øádkù v Excelu: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:194]
+2025-02-20 11:34:04,581 INFO: Poèet øádkù po odstranìní prázdných serverù: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:203]
+2025-02-20 11:34:04,589 INFO: Poèet øádkù po kontrole data: 290 [in C:\Users\uzivatel\Documents\script-1\app.py:222]
+2025-02-20 11:34:04,589 INFO: Dostupné sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:225]
+2025-02-20 11:34:04,590 INFO: Prvních 5 øádkù: [in C:\Users\uzivatel\Documents\script-1\app.py:228]
+2025-02-20 11:34:04,598 INFO:          Server                                   Cesta                               Název certifikátu             Expirace
+0  TVWATRCPRX01                               Personal                          *trcacheprx.ppfbanka.cz  2025-10-10 00:00:00
+1  TVWATRCPRX01                               Personal                          TVWATRCPRX01.dmzppfb.cz  2025-03-27 00:00:00
+3  TVWATRCPRX01  Trusted Root Certification Authorities  Class 3 Public Primary Certification Authority  2028-08-02 00:00:00
+4  TVWATRCPRX01  Trusted Root Certification Authorities              COMODO RSA Certification Authority  2038-01-19 00:00:00
+5  TVWATRCPRX01  Trusted Root Certification Authorities                     DigiCert Assured ID Root CA  2031-11-10 00:00:00 [in C:\Users\uzivatel\Documents\script-1\app.py:229]
+2025-02-20 11:38:39,896 INFO: Aplikace spuštìna [in C:\Users\uzivatel\Documents\script-1\app.py:34]
+2025-02-20 11:38:39,923 INFO: Vytvoøena nová databáze [in C:\Users\uzivatel\Documents\script-1\app.py:544]
+2025-02-20 11:40:06,130 INFO: Aplikace spuštìna [in C:\Users\uzivatel\Documents\script-1\app.py:34]
+2025-02-20 11:40:06,153 INFO: Vytvoøena nová databáze [in C:\Users\uzivatel\Documents\script-1\app.py:541]
+2025-02-20 12:26:41,440 INFO: Aplikace spuštìna [in C:\Users\uzivatel\Documents\script-1\app.py:34]
+2025-02-20 12:26:41,462 INFO: Vytvoøena nová databáze [in C:\Users\uzivatel\Documents\script-1\app.py:538]
+2025-02-20 12:26:48,246 INFO: Import souboru: certy_uat.xlsx [in C:\Users\uzivatel\Documents\script-1\app.py:186]
+2025-02-20 12:26:48,247 INFO: Pùvodní sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:187]
+2025-02-20 12:26:48,248 INFO: Celkový poèet øádkù v Excelu: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:188]
+2025-02-20 12:26:48,258 INFO: Poèet øádkù po odstranìní prázdných serverù: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:197]
+2025-02-20 12:26:48,261 INFO: Poèet øádkù po kontrole data: 290 [in C:\Users\uzivatel\Documents\script-1\app.py:216]
+2025-02-20 12:26:48,262 INFO: Dostupné sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:219]
+2025-02-20 12:26:48,263 INFO: Prvních 5 øádkù: [in C:\Users\uzivatel\Documents\script-1\app.py:222]
+2025-02-20 12:26:48,267 INFO:          Server                                   Cesta                               Název certifikátu             Expirace
+0  TVWATRCPRX01                               Personal                          *trcacheprx.ppfbanka.cz  2025-10-10 00:00:00
+1  TVWATRCPRX01                               Personal                          TVWATRCPRX01.dmzppfb.cz  2025-03-27 00:00:00
+3  TVWATRCPRX01  Trusted Root Certification Authorities  Class 3 Public Primary Certification Authority  2028-08-02 00:00:00
+4  TVWATRCPRX01  Trusted Root Certification Authorities              COMODO RSA Certification Authority  2038-01-19 00:00:00
+5  TVWATRCPRX01  Trusted Root Certification Authorities                     DigiCert Assured ID Root CA  2031-11-10 00:00:00 [in C:\Users\uzivatel\Documents\script-1\app.py:223]
+2025-02-20 12:36:29,692 INFO: Aplikace spuštìna [in C:\Users\uzivatel\Documents\script-1\app.py:34]
+2025-02-20 12:36:29,716 INFO: Vytvoøena nová databáze [in C:\Users\uzivatel\Documents\script-1\app.py:544]
+2025-02-20 12:36:48,999 INFO: Import souboru: certy_uat.xlsx [in C:\Users\uzivatel\Documents\script-1\app.py:186]
+2025-02-20 12:36:49,000 INFO: Pùvodní sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:187]
+2025-02-20 12:36:49,000 INFO: Celkový poèet øádkù v Excelu: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:188]
+2025-02-20 12:36:49,008 INFO: Poèet øádkù po odstranìní prázdných serverù: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:197]
+2025-02-20 12:36:49,011 INFO: Poèet øádkù po kontrole data: 290 [in C:\Users\uzivatel\Documents\script-1\app.py:216]
+2025-02-20 12:36:49,012 INFO: Dostupné sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:219]
+2025-02-20 12:36:49,012 INFO: Prvních 5 øádkù: [in C:\Users\uzivatel\Documents\script-1\app.py:222]
+2025-02-20 12:36:49,016 INFO:          Server                                   Cesta                               Název certifikátu             Expirace
+0  TVWATRCPRX01                               Personal                          *trcacheprx.ppfbanka.cz  2025-10-10 00:00:00
+1  TVWATRCPRX01                               Personal                          TVWATRCPRX01.dmzppfb.cz  2025-03-27 00:00:00
+3  TVWATRCPRX01  Trusted Root Certification Authorities  Class 3 Public Primary Certification Authority  2028-08-02 00:00:00
+4  TVWATRCPRX01  Trusted Root Certification Authorities              COMODO RSA Certification Authority  2038-01-19 00:00:00
+5  TVWATRCPRX01  Trusted Root Certification Authorities                     DigiCert Assured ID Root CA  2031-11-10 00:00:00 [in C:\Users\uzivatel\Documents\script-1\app.py:223]
+2025-02-20 12:38:51,698 INFO: Import souboru: certy_uat.xlsx [in C:\Users\uzivatel\Documents\script-1\app.py:186]
+2025-02-20 12:38:51,699 INFO: Pùvodní sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:187]
+2025-02-20 12:38:51,700 INFO: Celkový poèet øádkù v Excelu: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:188]
+2025-02-20 12:38:51,705 INFO: Poèet øádkù po odstranìní prázdných serverù: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:197]
+2025-02-20 12:38:51,707 INFO: Poèet øádkù po kontrole data: 290 [in C:\Users\uzivatel\Documents\script-1\app.py:216]
+2025-02-20 12:38:51,708 INFO: Dostupné sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:219]
+2025-02-20 12:38:51,709 INFO: Prvních 5 øádkù: [in C:\Users\uzivatel\Documents\script-1\app.py:222]
+2025-02-20 12:38:51,712 INFO:          Server                                   Cesta                               Název certifikátu             Expirace
+0  TVWATRCPRX01                               Personal                          *trcacheprx.ppfbanka.cz  2025-10-10 00:00:00
+1  TVWATRCPRX01                               Personal                          TVWATRCPRX01.dmzppfb.cz  2025-03-27 00:00:00
+3  TVWATRCPRX01  Trusted Root Certification Authorities  Class 3 Public Primary Certification Authority  2028-08-02 00:00:00
+4  TVWATRCPRX01  Trusted Root Certification Authorities              COMODO RSA Certification Authority  2038-01-19 00:00:00
+5  TVWATRCPRX01  Trusted Root Certification Authorities                     DigiCert Assured ID Root CA  2031-11-10 00:00:00 [in C:\Users\uzivatel\Documents\script-1\app.py:223]
+2025-02-20 12:39:39,358 INFO: Import souboru: certy_uat.xlsx [in C:\Users\uzivatel\Documents\script-1\app.py:186]
+2025-02-20 12:39:39,359 INFO: Pùvodní sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:187]
+2025-02-20 12:39:39,360 INFO: Celkový poèet øádkù v Excelu: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:188]
+2025-02-20 12:39:39,363 INFO: Poèet øádkù po odstranìní prázdných serverù: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:197]
+2025-02-20 12:39:39,365 INFO: Poèet øádkù po kontrole data: 290 [in C:\Users\uzivatel\Documents\script-1\app.py:216]
+2025-02-20 12:39:39,365 INFO: Dostupné sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:219]
+2025-02-20 12:39:39,366 INFO: Prvních 5 øádkù: [in C:\Users\uzivatel\Documents\script-1\app.py:222]
+2025-02-20 12:39:39,367 INFO:          Server                                   Cesta                               Název certifikátu             Expirace
+0  TVWATRCPRX01                               Personal                          *trcacheprx.ppfbanka.cz  2025-10-10 00:00:00
+1  TVWATRCPRX01                               Personal                          TVWATRCPRX01.dmzppfb.cz  2025-03-27 00:00:00
+3  TVWATRCPRX01  Trusted Root Certification Authorities  Class 3 Public Primary Certification Authority  2028-08-02 00:00:00
+4  TVWATRCPRX01  Trusted Root Certification Authorities              COMODO RSA Certification Authority  2038-01-19 00:00:00
+5  TVWATRCPRX01  Trusted Root Certification Authorities                     DigiCert Assured ID Root CA  2031-11-10 00:00:00 [in C:\Users\uzivatel\Documents\script-1\app.py:223]
+2025-02-20 12:40:23,532 INFO: Import souboru: certy_uat.xlsx [in C:\Users\uzivatel\Documents\script-1\app.py:186]
+2025-02-20 12:40:23,533 INFO: Pùvodní sloupce: ['Server', 'Cesta', 'Název certifikátu', 'Expirace'] [in C:\Users\uzivatel\Documents\script-1\app.py:187]
+2025-02-20 12:40:23,534 INFO: Celkový poèet øádkù v Excelu: 340 [in C:\Users\uzivatel\Documents\script-1\app.py:188]
