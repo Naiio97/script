@@ -1,0 +1,40 @@
+{% extends "modal_base.html" %}
+
+{% block modal_title %}Detail certifikátu{% endblock %}
+
+{% block modal_content %}
+<div class="detail-content">
+    <div class="detail-row">
+        <label>Server:</label>
+        <span>{{ certifikat.server }}</span>
+    </div>
+    <div class="detail-row">
+        <label>Cesta:</label>
+        <span>{{ certifikat.cesta }}</span>
+    </div>
+    <div class="detail-row">
+        <label>Název:</label>
+        <span>{{ certifikat.nazev }}</span>
+    </div>
+    <div class="detail-row">
+        <label>Expirace:</label>
+        <span>{{ certifikat.expirace.strftime('%d.%m.%Y') }}</span>
+    </div>
+    <div class="detail-row">
+        <label>Zbývá dnů:</label>
+        <span class="{{ certifikat|get_expiry_class }}">
+            {{ certifikat.expirace|days_until_expiry }}
+        </span>
+    </div>
+    {% if certifikat.poznamka %}
+    <div class="detail-row">
+        <label>Poznámka:</label>
+        <span>{{ certifikat.poznamka }}</span>
+    </div>
+    {% endif %}
+    <div class="detail-row">
+        <label>Vytvořeno:</label>
+        <span>{{ certifikat.vytvoreno.strftime('%d.%m.%Y %H:%M:%S') }}</span>
+    </div>
+</div>
+{% endblock %} 

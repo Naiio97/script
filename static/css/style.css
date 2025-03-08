@@ -1,3 +1,16 @@
+/* Základní reset a proměnné */
+:root {
+    --primary-color: #3498db;
+    --success-color: #2ecc71;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --info-color: #34495e;
+    --text-color: #2c3e50;
+    --background-color: #f5f6fa;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 /* Základní reset */
 * {
     margin: 0;
@@ -7,29 +20,30 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: #f5f6fa;
-    color: #2c3e50;
+    background: var(--background-color);
+    color: var(--text-color);
     line-height: 1.6;
     padding: 20px;
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 0 20px;
 }
 
 /* Toolbar */
 .toolbar {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     width: 100%;
 }
 
 .button-group {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     flex-wrap: wrap;
     width: 100%;
-    justify-content: space-between;
+    justify-content: stretch;
 }
 
 /* Navigace */
@@ -71,32 +85,27 @@ body {
 /* Tabulka */
 .table-container {
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
     overflow: hidden;
-    margin-top: 20px;
-    overflow-x: auto;
+    margin: 20px 0;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
 }
 
 th, td {
-    padding: 12px;
+    padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid #eee;
-    vertical-align: middle;
-    word-wrap: break-word;
-    max-width: 0;  /* Nutné pro word-wrap v td */
 }
 
 th {
     background: #f8f9fa;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-color);
 }
 
 /* Šířky sloupců */
@@ -127,20 +136,21 @@ td.actions {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    justify-content: center;
 }
 
 /* Tlačítka v toolbaru */
 .button-group .button {
     flex: 1;
-    min-width: 150px;
-    max-width: 200px;
+    min-width: 140px;
+    text-align: center;
+    justify-content: center;
 }
 
-.button.primary { background: #3498db; color: white; }
-.button.success { background: #2ecc71; color: white; }
-.button.danger { background: #e74c3c; color: white; }
-.button.info { background: #34495e; color: white; }
+.button.primary { background: var(--primary-color); color: white; }
+.button.success { background: var(--success-color); color: white; }
+.button.danger { background: var(--danger-color); color: white; }
+.button.warning { background: var(--warning-color); color: white; }
+.button.info { background: var(--info-color); color: white; }
 .button.secondary { background: #95a5a6; color: white; }
 
 .button:hover {
@@ -152,8 +162,8 @@ td.actions {
 .button.small {
     padding: 6px;
     min-width: unset;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     display: inline-block;
     margin: 0 1px;
     flex: none;
@@ -164,30 +174,29 @@ td.actions {
 }
 
 /* Stavy certifikátů */
-tr.cert-expired { 
-    background-color: #fee2e2 !important;
-    color: #dc2626 !important;
-    font-weight: 600;
+.cert-expired {
+    background-color: rgba(239, 68, 68, 0.15) !important;  /* Výraznější červená */
+    color: rgba(185, 28, 28, 0.9) !important;  /* Tmavší červená */
+    font-weight: 500 !important;
 }
 
-tr.cert-warning { 
-    background-color: #ffedd5 !important;
-    color: #ea580c !important;
-    font-weight: 500;
+.cert-warning {
+    background-color: rgba(245, 158, 11, 0.15) !important;  /* Výraznější oranžová */
+    color: rgba(194, 65, 12, 0.9) !important;  /* Tmavší oranžová */
+    font-weight: 500 !important;
 }
 
-tr.cert-ending-year { 
-    background-color: #dbeafe !important;
-    color: #2563eb !important;
-    font-weight: 400;
+.cert-ending-year {
+    background-color: rgba(59, 130, 246, 0.15) !important;  /* Výraznější modrá */
+    color: rgba(29, 78, 216, 0.9) !important;  /* Tmavší modrá */
+    font-weight: 500 !important;
 }
 
 /* Přepíšeme případné konfliktní styly */
 tr.cert-expired td,
 tr.cert-warning td,
 tr.cert-ending-year td {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    color: inherit;  /* Zajistí, že text v buňkách bude mít stejnou barvu jako řádek */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Import formulář */
@@ -224,70 +233,95 @@ tr.cert-ending-year td {
 .modal {
     display: none;
     position: fixed;
-    top: 0;
+    z-index: 1000;
     left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.5);
+    overflow: auto;
 }
 
 .modal-content {
     position: relative;
-    background-color: #fff;
-    margin: 50px auto;
-    padding: 0;
-    width: 90%;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
     max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 50px auto;
+    width: 90%;
+    animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
 }
 
 .modal-header h2 {
     margin: 0;
-    font-size: 1.5rem;
-    color: #2c3e50;
-}
-
-.close-button {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-    padding: 0 5px;
-}
-
-.close-button:hover {
-    color: #000;
+    font-size: 1.4rem;
+    color: var(--text-color);
 }
 
 .modal-body {
     padding: 20px;
 }
 
-/* Detail obsah */
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Tlačítko zavřít v modálním okně */
+.close {
+    position: relative;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+    padding: 5px;
+    z-index: 100;
+}
+
+.close:hover {
+    color: #000;
+}
+
+/* Ujistíme se, že tlačítka v modálním okně jsou klikatelná */
+.modal-footer button {
+    cursor: pointer;
+    position: relative;
+    z-index: 100;
+}
+
+/* Detail v modálním okně */
 .detail-content {
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .detail-row {
-    margin-bottom: 15px;
     display: flex;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #f0f0f0;
     padding-bottom: 10px;
 }
 
 .detail-row label {
-    width: 150px;
+    flex: 0 0 150px;
     font-weight: 500;
     color: #666;
 }
@@ -325,7 +359,18 @@ tr.cert-ending-year td {
 }
 
 /* Responzivní design */
+@media (max-width: 1440px) {
+    .container {
+        max-width: 100%;
+        padding: 0 30px;
+    }
+}
+
 @media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
     .table-container {
         overflow-x: auto;
     }
@@ -354,12 +399,11 @@ tr.cert-ending-year td {
     gap: 30px;
 }
 
-/* Statistiky */
+/* Kontejner pro statistiky */
 .stats-container {
     display: flex;
-    gap: 20px;
-    justify-content: space-between;
-    margin-top: 20px;
+    gap: 25px;
+    flex-wrap: wrap;
 }
 
 .stat-card {
@@ -400,21 +444,23 @@ tr.cert-ending-year td {
 /* Server statistiky */
 .server-stats {
     background: white;
+    padding: 30px;  /* Větší vnitřní padding */
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 5px;
-    border-top: 1px solid #eee;
+    margin: 20px 0;
 }
 
 .server-stats h2 {
-    margin-bottom: 20px;
+    margin-bottom: 25px;  /* Větší mezera pod nadpisem */
     color: #2c3e50;
+    font-size: 1.5rem;
 }
 
 .server-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;  /* Větší mezera mezi server kartami */
+    padding: 10px;
 }
 
 .server-stat-card {
@@ -659,4 +705,91 @@ tr.cert-ending-year td {
     height: 1em;
     vertical-align: -0.125em;
     fill: currentColor;
+}
+
+/* Flash zprávy */
+.flash-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    background-color: rgba(76, 175, 80, 0.9);
+    color: white;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    max-width: 300px;
+    backdrop-filter: blur(5px);
+}
+
+.flash-message.error {
+    background-color: rgba(244, 67, 54, 0.9);
+}
+
+.flash-message.warning {
+    background-color: rgba(255, 152, 0, 0.9);
+}
+
+.flash-message.info {
+    background-color: rgba(33, 150, 243, 0.9);
+}
+
+/* Statistiky */
+.stat-box {
+    flex: 1;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    min-width: 200px;
+}
+
+.stat-box h3 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.stat-box p {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin: 10px 0;
+}
+
+.stat-box small {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Tabulka končících certifikátů */
+.dashboard .table-container {
+    background: white;
+    padding: 30px;  /* Větší padding */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin: 20px 0;
+}
+
+.dashboard .table-container h2 {
+    margin-bottom: 25px;  /* Větší mezera pod nadpisem */
+    color: #2c3e50;
+    font-size: 1.5rem;
+}
+
+/* Statistiky - boxy */
+.stat-box.cert-expired {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: rgba(185, 28, 28, 0.9);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.stat-box.cert-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: rgba(194, 65, 12, 0.9);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.stat-box.cert-ending-year {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: rgba(29, 78, 216, 0.9);
+    border: 1px solid rgba(59, 130, 246, 0.2);
 } 

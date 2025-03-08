@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Přehled končících certifikátů{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="header">
+        <h1>Dashboard</h1>
+        <a href="{{ url_for('main.index') }}" class="button info">
+            <i class="fas fa-arrow-left"></i>
+            Zpět na přehled
+        </a>
+    </div>
+
+    <!-- Statistiky -->
+    <div class="stats-container">
+        <div class="stat-box cert-expired">
+            <h3>Kritické</h3>
+            <p>{{ stats.critical }}</p>
+            <small>končí tento měsíc</small>
+        </div>
+        <div class="stat-box cert-warning">
+            <h3>Varování</h3>
+            <p>{{ stats.warning }}</p>
+            <small>končí příští měsíc</small>
+        </div>
+        <div class="stat-box cert-ending-year">
+            <h3>Tento rok</h3>
+            <p>{{ stats.this_year }}</p>
+            <small>končí tento rok</small>
+        </div>
+    </div>
+
+    <!-- Statistiky podle serverů -->
+    <div class="server-stats">
+        <h2>Přehled podle serverů</h2>
+        <div class="server-stats-grid">
+            {% for server, count in server_stats %}
+            <div class="server-stat-card">
+                <div class="server-name">{{ server }}</div>
+                <div class="server-count">{{ count }}</div>
+                <div class="server-label">certifikátů</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tabulka končících certifikátů -->
+        <h2>Končící certifikáty</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Server</th>
+                    <th>Cesta</th>
+                    <th>Název</th>
+                    <th>Expirace</th>
+                    <th>Zbývá dnů</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cert in ending_certs %}
+                <tr class="{{ cert|get_expiry_class }}">
+                    <td>{{ cert.server }}</td>
+                    <td>{{ cert.cesta }}</td>
+                    <td>{{ cert.nazev }}</td>
+                    <td>{{ cert.expirace.strftime('%d.%m.%Y') }}</td>
+                    <td>{{ (cert.expirace - today).days }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+</div>
+{% endblock %} 

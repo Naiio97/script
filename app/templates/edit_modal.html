@@ -1,0 +1,87 @@
+{% extends "modal_base.html" %}
+
+{% block modal_title %}{% if certifikat %}Upravit certifikát{% else %}Přidat nový certifikát{% endif %}{% endblock %}
+
+{% block modal_content %}
+<form id="certifikatForm" method="POST" onsubmit="handleCertSubmit(event, {% if certifikat %}{{ certifikat.id }}{% else %}null{% endif %})">
+    <div class="form-group">
+        <label for="server">Server:</label>
+        <select name="server" id="server" required>
+            <option value="">-- Vyberte server --</option>
+            {% for server in servery %}
+            <option value="{{ server.nazev }}" {% if certifikat and certifikat.server == server.nazev %}selected{% endif %}>
+                {{ server.nazev }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="cesta">Cesta k certifikátu:</label>
+        <input type="text" name="cesta" id="cesta" value="{{ certifikat.cesta if certifikat else '' }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="nazev">Název certifikátu:</label>
+        <input type="text" name="nazev" id="nazev" value="{{ certifikat.nazev if certifikat else '' }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="expirace">Datum expirace:</label>
+        <input type="text" name="expirace" id="expirace" class="datepicker" 
+               value="{{ certifikat.expirace.strftime('%Y-%m-%d') if certifikat and certifikat.expirace else '' }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="poznamka">Poznámka:</label>
+        <textarea name="poznamka" id="poznamka" rows="3">{{ certifikat.poznamka if certifikat else '' }}</textarea>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="button primary">
+            {% if certifikat %}Uložit změny{% else %}Přidat certifikát{% endif %}
+        </button>
+    </div>
+</form>
+
+<script>
+// Inicializace datepickeru
+flatpickr("#expirace", {
+    dateFormat: "Y-m-d",
+    allowInput: true
+});
+
+// Obsluha formuláře pro certifikáty
+function handleCertSubmit(event, id) {
+    event.preventDefault();
+    console.log('Odesílám formulář certifikátu s ID: ' + id);
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const url = id ? `/evidence_certifikatu/upravit/${id}` : '/evidence_certifikatu/pridat';
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeModal();
+            window.location.reload();
+        } else {
+            alert(data.message || 'Došlo k chybě při ukládání certifikátu');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Došlo k chybě při ukládání certifikátu');
+    });
+}
+</script>
+{% endblock %}
+
+{% block modal_footer_buttons %}
+<!-- Prázdné, tlačítko je nyní součástí formuláře -->
+{% endblock %} 

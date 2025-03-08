@@ -1,0 +1,27 @@
+{% extends "modal_base.html" %}
+
+{% block modal_title %}{% if server %}Upravit server{% else %}Přidat nový server{% endif %}{% endblock %}
+
+{% block modal_content %}
+<form id="serverForm" method="POST" onsubmit="handleServerEdit(event, {% if server %}{{ server.id }}{% else %}null{% endif %})">
+    <div class="form-group">
+        <label for="nazev">Název serveru:</label>
+        <input type="text" name="nazev" id="nazev" value="{{ server.nazev if server else '' }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="popis">Popis:</label>
+        <textarea name="popis" id="popis" rows="3">{{ server.popis if server else '' }}</textarea>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="button primary">
+            {% if server %}Uložit změny{% else %}Přidat server{% endif %}
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block modal_footer_buttons %}
+<!-- Prázdné, tlačítko je nyní součástí formuláře -->
+{% endblock %} 
