@@ -22,8 +22,8 @@
     </div>
     <div class="detail-row">
         <label>Zbývá dnů:</label>
-        <span class="{{ certifikat|get_expiry_class }}">
-            {{ certifikat.expirace|days_until_expiry }}
+        <span>
+            <span class="{{ certifikat|get_expiry_class }}">{{ certifikat.expirace|days_until_expiry }}</span>
         </span>
     </div>
     {% if certifikat.poznamka %}

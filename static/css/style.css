@@ -129,7 +129,7 @@ td.actions {
     border-radius: 4px;
     padding: 8px 16px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     text-decoration: none;
     transition: all 0.2s;
@@ -173,30 +173,33 @@ td.actions {
     margin: 0 auto;
 }
 
-/* Stavy certifikátů */
-.cert-expired {
-    background-color: rgba(239, 68, 68, 0.15) !important;  /* Výraznější červená */
-    color: rgba(185, 28, 28, 0.9) !important;  /* Tmavší červená */
-    font-weight: 500 !important;
+/* Stavy certifikátů v tabulce */
+tr.cert-expired {
+    background-color: rgba(239, 68, 68, 0.15) !important;
 }
 
-.cert-warning {
-    background-color: rgba(245, 158, 11, 0.15) !important;  /* Výraznější oranžová */
-    color: rgba(194, 65, 12, 0.9) !important;  /* Tmavší oranžová */
-    font-weight: 500 !important;
+tr.cert-warning {
+    background-color: rgba(245, 158, 11, 0.15) !important;
 }
 
-.cert-ending-year {
-    background-color: rgba(59, 130, 246, 0.15) !important;  /* Výraznější modrá */
-    color: rgba(29, 78, 216, 0.9) !important;  /* Tmavší modrá */
-    font-weight: 500 !important;
+tr.cert-ending-year {
+    background-color: rgba(59, 130, 246, 0.15) !important;
 }
 
-/* Přepíšeme případné konfliktní styly */
-tr.cert-expired td,
-tr.cert-warning td,
-tr.cert-ending-year td {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+/* Stavy certifikátů v detailu */
+.detail-content .cert-expired {
+    background-color: transparent !important;
+    color: rgba(185, 28, 28, 0.9) !important;
+}
+
+.detail-content .cert-warning {
+    background-color: transparent !important;
+    color: rgba(194, 65, 12, 0.9) !important;
+}
+
+.detail-content .cert-ending-year {
+    background-color: transparent !important;
+    color: rgba(29, 78, 216, 0.9) !important;
 }
 
 /* Import formulář */
@@ -614,17 +617,14 @@ tr.cert-ending-year td {
 
 .cert-expired {
     color: #dc3545;  /* červená pro expirované nebo končící do 30 dnů */
-    font-weight: bold;
 }
 
 .cert-warning {
     color: #fd7e14;  /* oranžová pro končící do 60 dnů */
-    font-weight: bold;
 }
 
 .cert-ending-year {
     color: #0d6efd;  /* modrá pro končící tento rok */
-    font-weight: bold;
 }
 
 /* Chybové stránky */
@@ -792,4 +792,10 @@ tr.cert-ending-year td {
     background-color: rgba(59, 130, 246, 0.15);
     color: rgba(29, 78, 216, 0.9);
     border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Úprava nadpisů */
+h1 {
+    white-space: nowrap;
+    display: inline-block;
 } 

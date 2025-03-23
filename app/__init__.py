@@ -10,12 +10,15 @@ from app.filters import days_until_expiry
 
 db = SQLAlchemy()
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__,
-                static_url_path='',  # Změníme na prázdný string
-                static_folder='../static')  # Cesta k static složce relativně k app složce
-    app.config.from_object(Config)
+                static_url_path='',  # Prázdná cesta pro statické soubory
+                static_folder='../static')  # Cesta ke static složce relativně k app adresáři
+    app.config.from_object(config_class)
     app.config['TEMPLATES_AUTO_RELOAD'] = True
+    
+    # Vypnout automatické přidávání lomítka
+    app.url_map.strict_slashes = False
     
     # Inicializace databáze
     db.init_app(app)

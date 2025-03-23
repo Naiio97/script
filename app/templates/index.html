@@ -20,9 +20,9 @@
         </a>
         <a href="{{ url_for('dashboard.index') }}" class="button info">
             <i class="fas fa-chart-bar"></i>
-            Dashboard
+            Končící certifikáty
         </a>
-        <a href="{{ url_for('servers.index') }}" class="button secondary">
+        <a href="{{ url_for('servers.seznam_serveru') }}" class="button secondary">
             <i class="fas fa-server"></i>
             Správa serverů
         </a>
@@ -108,8 +108,8 @@ function upravitCertifikat(id) {
     fetch(`/evidence_certifikatu/get-edit-form/${id}`)
         .then(response => response.text())
         .then(html => {
-            document.querySelector('#modal .modal-content').innerHTML = html;
-            openModal('modal');
+            document.querySelector('#detailModal .modal-content').innerHTML = html;
+            openModal('detailModal');
         });
 }
 
@@ -117,8 +117,8 @@ function zobrazitDetail(id) {
     fetch(`/evidence_certifikatu/detail/${id}`)
         .then(response => response.text())
         .then(html => {
-            document.querySelector('#modal .modal-content').innerHTML = html;
-            openModal('modal');
+            document.querySelector('#detailModal .modal-content').innerHTML = html;
+            openModal('detailModal');
         });
 }
 

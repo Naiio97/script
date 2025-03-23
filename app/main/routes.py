@@ -6,7 +6,6 @@ bp = Blueprint('main', __name__)
 
 @bp.route('/')
 @bp.route('/evidence_certifikatu')
-@bp.route('/evidence_certifikatu/')
 def index():
     try:
         # Načteme všechny servery

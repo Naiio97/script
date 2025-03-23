@@ -39,23 +39,19 @@ def pridat_server():
         try:
             existujici = Server.query.filter_by(nazev=nazev).first()
             if existujici:
-                return jsonify({
-                    'success': False,
-                    'message': f'Server {nazev} již existuje!'
-                })
+                flash(f'Server {nazev} již existuje!', 'error')
+                return redirect(url_for('servers.seznam_serveru'))
             
             server = Server(nazev=nazev, popis=popis)
             db.session.add(server)
             db.session.commit()
             flash(f'Server {nazev} byl úspěšně přidán!', 'success')
-            return jsonify({'success': True})
+            return redirect(url_for('servers.seznam_serveru'))
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f'Chyba při přidávání serveru: {str(e)}')
-            return jsonify({
-                'success': False,
-                'message': f'Chyba při přidávání serveru: {str(e)}'
-            })
+            flash(f'Chyba při přidávání serveru: {str(e)}', 'error')
+            return redirect(url_for('servers.seznam_serveru'))
     
     return render_template('server_edit_modal.html', server=None)
 
@@ -73,26 +69,22 @@ def detail_serveru(id):
 
 @bp.route('/servery/upravit/<int:id>', methods=['GET', 'POST'])
 def upravit_server(id):
-    try:
-        server = Server.query.get_or_404(id)
-        
-        if request.method == 'POST':
-            server.nazev = request.form['nazev']
-            server.popis = request.form.get('popis', '')
+    server = Server.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        try:
+            server.nazev = request.form.get('nazev')
+            server.popis = request.form.get('popis')
+            
             db.session.commit()
-            current_app.logger.info(f'Server {server.nazev} byl úspěšně upraven')
-            return jsonify({
-                'success': True,
-                'message': 'Server byl úspěšně upraven'
-            })
-        
-        return render_template('server_edit_modal.html', server=server)
-    except Exception as e:
-        current_app.logger.error(f'Chyba při úpravě serveru: {str(e)}')
-        return jsonify({
-            'success': False,
-            'message': f'Chyba při úpravě serveru: {str(e)}'
-        }), 500
+            flash('Server byl úspěšně upraven', 'success')
+            return redirect(url_for('servers.seznam_serveru'))
+        except Exception as e:
+            current_app.logger.error(f'Chyba při úpravě serveru: {str(e)}')
+            flash(f'Chyba při úpravě serveru: {str(e)}', 'error')
+            return redirect(url_for('servers.seznam_serveru'))
+    
+    return render_template('server_edit_modal.html', server=server)
 
 @bp.route('/servery/smazat/<int:id>')
 def smazat_server(id):

@@ -5,11 +5,14 @@
 {% block content %}
 <div class="dashboard">
     <div class="header">
-        <h1>Dashboard</h1>
-        <a href="{{ url_for('main.index') }}" class="button info">
-            <i class="fas fa-arrow-left"></i>
-            Zpět na přehled
-        </a>
+        <h1>Končící certifikáty</h1>
+        <div class="toolbar" style="display: flex; justify-content: space-between;">
+            <div></div>
+            <a href="{{ url_for('root') }}" class="button info">
+                <i class="fas fa-arrow-left"></i>
+                Zpět na přehled
+            </a>
+        </div>
     </div>
 
     <!-- Statistiky -->

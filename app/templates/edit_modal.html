@@ -1,9 +1,9 @@
 {% extends "modal_base.html" %}
 
-{% block modal_title %}{% if certifikat %}Upravit certifikát{% else %}Přidat nový certifikát{% endif %}{% endblock %}
+{% block modal_title %}{% if certifikat %}Upravit{% else %}Přidat{% endif %} certifikát{% endblock %}
 
 {% block modal_content %}
-<form id="certifikatForm" method="POST" onsubmit="handleCertSubmit(event, {% if certifikat %}{{ certifikat.id }}{% else %}null{% endif %})">
+<form id="certifikatForm" method="POST" action="{% if certifikat %}/evidence_certifikatu/upravit/{{ certifikat.id }}{% else %}/evidence_certifikatu/pridat{% endif %}">
     <div class="form-group">
         <label for="server">Server:</label>
         <select name="server" id="server" required>
@@ -29,7 +29,8 @@
     <div class="form-group">
         <label for="expirace">Datum expirace:</label>
         <input type="text" name="expirace" id="expirace" class="datepicker" 
-               value="{{ certifikat.expirace.strftime('%Y-%m-%d') if certifikat and certifikat.expirace else '' }}" required>
+               value="{{ certifikat.expirace.strftime('%d.%m.%Y') if certifikat and certifikat.expirace else '' }}" 
+               placeholder="dd.mm.yyyy" required>
     </div>
     
     <div class="form-group">
@@ -39,7 +40,7 @@
     
     <div class="form-actions">
         <button type="submit" class="button primary">
-            {% if certifikat %}Uložit změny{% else %}Přidat certifikát{% endif %}
+            {{ 'Upravit' if certifikat else 'Přidat' }}
         </button>
     </div>
 </form>
@@ -47,38 +48,9 @@
 <script>
 // Inicializace datepickeru
 flatpickr("#expirace", {
-    dateFormat: "Y-m-d",
+    dateFormat: "d.m.Y",
     allowInput: true
 });
-
-// Obsluha formuláře pro certifikáty
-function handleCertSubmit(event, id) {
-    event.preventDefault();
-    console.log('Odesílám formulář certifikátu s ID: ' + id);
-    
-    const form = event.target;
-    const formData = new FormData(form);
-    
-    const url = id ? `/evidence_certifikatu/upravit/${id}` : '/evidence_certifikatu/pridat';
-    
-    fetch(url, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            closeModal();
-            window.location.reload();
-        } else {
-            alert(data.message || 'Došlo k chybě při ukládání certifikátu');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Došlo k chybě při ukládání certifikátu');
-    });
-}
 </script>
 {% endblock %}
 

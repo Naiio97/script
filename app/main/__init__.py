@@ -1,5 +1,5 @@
 from flask import Blueprint
 
-bp = Blueprint('main', __name__, url_prefix='/evidence_certifikatu')
+bp = Blueprint('main', __name__)
 
 from . import routes 

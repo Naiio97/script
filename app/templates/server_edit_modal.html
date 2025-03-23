@@ -3,7 +3,7 @@
 {% block modal_title %}{% if server %}Upravit server{% else %}Přidat nový server{% endif %}{% endblock %}
 
 {% block modal_content %}
-<form id="serverForm" method="POST" onsubmit="handleServerEdit(event, {% if server %}{{ server.id }}{% else %}null{% endif %})">
+<form id="serverForm" method="POST" action="{% if server %}/evidence_certifikatu/servery/upravit/{{ server.id }}{% else %}/evidence_certifikatu/servery/pridat{% endif %}">
     <div class="form-group">
         <label for="nazev">Název serveru:</label>
         <input type="text" name="nazev" id="nazev" value="{{ server.nazev if server else '' }}" required>

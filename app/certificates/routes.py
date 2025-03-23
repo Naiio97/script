@@ -2,12 +2,16 @@ from flask import Blueprint, request, jsonify, current_app, flash, redirect, url
 from app.models import Certifikat, Server
 from app import db
 from app.utils import allowed_file, is_valid_date
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import os
 from werkzeug.utils import secure_filename
 from openpyxl import Workbook
 from app import get_expiry_class  # Přidejte tento import na začátek souboru
+from tempfile import NamedTemporaryFile
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from openpyxl.styles.differential import DifferentialStyle
+from openpyxl.formatting.rule import Rule
 
 bp = Blueprint('certificates', __name__)
 
@@ -46,44 +50,36 @@ def get_edit_form(id):
         current_app.logger.error(f'Chyba při načítání editačního formuláře: {str(e)}')
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/upravit/<int:id>', methods=['POST'])
+@bp.route('/upravit/<int:id>', methods=['GET', 'POST'])
 def upravit_certifikat(id):
-    try:
-        certifikat = Certifikat.query.get_or_404(id)
-        
-        server = request.form['server']
-        cesta = request.form['cesta']
-        nazev = request.form['nazev']
-        expirace_str = request.form['expirace']
-        poznamka = request.form.get('poznamka', '')
-        
+    certifikat = Certifikat.query.get_or_404(id)
+    servery = Server.query.all()
+    
+    if request.method == 'POST':
         try:
-            expirace = datetime.strptime(expirace_str, '%d.%m.%Y')
-            certifikat.server = server
-            certifikat.cesta = cesta
-            certifikat.nazev = nazev
+            certifikat.server = request.form['server']
+            certifikat.cesta = request.form['cesta']
+            certifikat.nazev = request.form['nazev']
+            
+            # Zpracování data
+            expirace_str = request.form['expirace']
+            expirace = datetime.strptime(expirace_str, '%d.%m.%Y').date()
             certifikat.expirace = expirace
-            certifikat.poznamka = poznamka
+            
+            certifikat.poznamka = request.form.get('poznamka', '')
             
             db.session.commit()
-            current_app.logger.info(f'Certifikát {certifikat.nazev} byl úspěšně upraven')
-            
-            return jsonify({
-                'success': True,
-                'message': 'Certifikát byl úspěšně upraven'
-            })
-        except ValueError:
-            return jsonify({
-                'success': False,
-                'message': 'Neplatný formát data! Použijte formát dd.mm.yyyy'
-            }), 400
-            
-    except Exception as e:
-        current_app.logger.error(f'Chyba při úpravě certifikátu: {str(e)}')
-        return jsonify({
-            'success': False,
-            'message': f'Chyba při úpravě certifikátu: {str(e)}'
-        }), 500
+            flash('Certifikát byl úspěšně upraven', 'success')
+            return redirect('/evidence_certifikatu')
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'Chyba při úpravě certifikátu: {str(e)}')
+            flash(f'Chyba při úpravě certifikátu: {str(e)}', 'error')
+            return redirect('/evidence_certifikatu')
+    
+    return render_template('formular.html', 
+                         certifikat=certifikat,
+                         servery=servery)
 
 @bp.route('/smazat/<int:id>')
 def smazat_certifikat(id):
@@ -185,36 +181,123 @@ def import_excel():
 @bp.route('/export-excel')
 def export_excel():
     try:
-        certifikaty = Certifikat.query.order_by(Certifikat.expirace).all()
+        certifikaty = Certifikat.query.order_by(Certifikat.server, Certifikat.cesta).all()
         
         wb = Workbook()
         ws = wb.active
         ws.title = "Certifikáty"
         
-        headers = ['Server', 'Cesta', 'Název certifikátu', 'Expirace', 'Poznámka']
+        # Styly
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="000080", end_color="000080", fill_type="solid")
+        alt_fill = PatternFill(start_color="F0F0F0", end_color="F0F0F0", fill_type="solid")
+        expired_fill = PatternFill(start_color="FFD9D9", end_color="FFD9D9", fill_type="solid")
+        
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # Hlavička
+        headers = ["Server", "Cesta", "Název certifikátu", "Expirace"]
         ws.append(headers)
         
+        # Formátování hlavičky
+        for cell in ws[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.border = thin_border
+            cell.alignment = Alignment(horizontal="left", vertical="center")
+        
+        # Data
+        today = datetime.now().date()
+        row_num = 2
+        merge_ranges = {'server': [], 'path': []}
+        prev_server = None
+        prev_path = None
+        merge_start = {'server': 2, 'path': 2}
+        
         for cert in certifikaty:
-            ws.append([
+            row = [
                 cert.server,
                 cert.cesta,
                 cert.nazev,
-                cert.expirace.strftime('%d.%m.%Y'),
-                cert.poznamka or ''
-            ])
+                cert.expirace.strftime('%d.%m.%Y')
+            ]
+            ws.append(row)
+            
+            # Formátování řádku
+            for cell in ws[row_num]:
+                cell.border = thin_border
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+                
+                # Alternující barvy řádků
+                if row_num % 2 == 0:
+                    cell.fill = alt_fill
+                
+                # Červené podbarvení pro expirované certifikáty - celý řádek
+                if cert.expirace < today:
+                    cell.fill = expired_fill
+            
+            # Kontrola pro sloučení buněk serveru
+            if prev_server != cert.server and prev_server is not None:
+                if row_num - merge_start['server'] > 1:
+                    merge_ranges['server'].append(f'A{merge_start["server"]}:A{row_num-1}')
+                merge_start['server'] = row_num
+            
+            # Kontrola pro sloučení buněk cesty
+            if prev_path != cert.cesta or prev_server != cert.server:
+                if row_num - merge_start['path'] > 1:
+                    merge_ranges['path'].append(f'B{merge_start["path"]}:B{row_num-1}')
+                merge_start['path'] = row_num
+            
+            prev_server = cert.server
+            prev_path = cert.cesta
+            row_num += 1
         
-        for column in ws.columns:
-            max_length = max(len(str(cell.value)) for cell in column)
-            ws.column_dimensions[column[0].column_letter].width = max_length + 2
+        # Poslední sloučení pro server a cestu
+        if row_num - merge_start['server'] > 1:
+            merge_ranges['server'].append(f'A{merge_start["server"]}:A{row_num-1}')
+        if row_num - merge_start['path'] > 1:
+            merge_ranges['path'].append(f'B{merge_start["path"]}:B{row_num-1}')
         
-        filename = f'certifikaty_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
-        filepath = os.path.join(current_app.root_path, 'static', filename)
-        wb.save(filepath)
+        # Provedení sloučení buněk
+        for ranges in merge_ranges.values():
+            for cell_range in ranges:
+                ws.merge_cells(cell_range)
         
-        flash('Excel soubor byl úspěšně vytvořen!')
-        return redirect(url_for('static', filename=filename))
+        # Automatická šířka sloupců
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            ws.column_dimensions[column].width = adjusted_width
         
+        # Zamrazení hlavičky
+        ws.freeze_panes = "A2"
+        
+        # Export
+        with NamedTemporaryFile(suffix='.xlsx', delete=False) as tmp:
+            filename = os.path.basename(tmp.name)
+            wb.save(tmp.name)
+            
+            return send_from_directory(
+                directory=os.path.dirname(tmp.name),
+                path=filename,
+                as_attachment=True,
+                download_name=f"certifikaty_export_{datetime.now().strftime('%Y%m%d')}.xlsx"
+            )
+            
     except Exception as e:
+        current_app.logger.error(f'Chyba při exportu do Excelu: {str(e)}')
         flash(f'Chyba při exportu do Excelu: {str(e)}', 'error')
         return redirect(url_for('main.index'))
 
