@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>Správa serverů</h1>
+        <div class="toolbar" style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="pridatServer()" class="button primary">
+                <i class="fas fa-plus"></i>
+                Přidat server
+            </button>
+            <a href="{{ url_for('root') }}" class="button info">
+                <i class="fas fa-arrow-left"></i>
+                Zpět na přehled
+            </a>
+        </div>
+    </div>
+
+    <!-- Seznam serverů -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Název serveru</th>
+                    <th>Popis</th>
+                    <th>Počet certifikátů</th>
+                    <th>Vytvořeno</th>
+                    <th>Akce</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for server in servery %}
+                <tr>
+                    <td>{{ server.nazev }}</td>
+                    <td>{{ server.popis or 'Bez popisu' }}</td>
+                    <td>{{ server.pocet_certifikatu }}</td>
+                    <td>{{ server.vytvoreno.strftime('%d.%m.%Y') }}</td>
+                    <td class="actions">
+                        <a class="button small info" onclick="zobrazitServerDetail('{{ server.id }}')" title="Detail">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a class="button small primary" onclick="upravitServer('{{ server.id }}')" title="Upravit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a class="button small danger" onclick="smazatServer('{{ server.id }}')" title="Smazat">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modální okno -->
+<div id="serverModal" class="modal">
+    <div class="modal-content">
+        <!-- Sem se dynamicky vloží obsah z server_detail_modal.html nebo server_edit_modal.html -->
+    </div>
+</div>
+
+<!-- JavaScript pro správu serverů -->
+<script>
+function pridatServer() {
+    fetch('/evidence_certifikatu/servery/pridat')
+        .then(response => response.text())
+        .then(html => {
+            document.querySelector('#serverModal .modal-content').innerHTML = html;
+            openModal('serverModal');
+        });
+}
+
+function zobrazitServerDetail(id) {
+    fetch(`/evidence_certifikatu/servery/detail/${id}`)
+        .then(response => response.text())
+        .then(html => {
+            document.querySelector('#serverModal .modal-content').innerHTML = html;
+            openModal('serverModal');
+        });
+}
+
+function upravitServer(id) {
+    fetch(`/evidence_certifikatu/servery/upravit/${id}`)
+        .then(response => response.text())
+        .then(html => {
+            document.querySelector('#serverModal .modal-content').innerHTML = html;
+            openModal('serverModal');
+        });
+}
+
+function smazatServer(id) {
+    if (confirm('Opravdu chcete smazat tento server? Budou smazány i všechny jeho certifikáty.')) {
+        window.location.href = `/evidence_certifikatu/servery/smazat/${id}`;
+    }
+}
+
+function handleServerEdit(event, id) {
+    event.preventDefault();
+    console.log('Odesílám formulář s ID: ' + id);
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const url = id ? `/evidence_certifikatu/servery/upravit/${id}` : '/evidence_certifikatu/servery/pridat';
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeModal('serverModal');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Došlo k chybě při ukládání serveru');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Došlo k chybě při ukládání serveru');
+    });
+}
+</script>
+{% endblock %} 
