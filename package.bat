@@ -1,73 +1,61 @@
 @echo off
 chcp 65001 >nul
 echo ============================================
-echo   Balení aplikace pro přenos
+echo   Baleni aplikace pro prenos na server
 echo ============================================
 echo.
 
 set "APP_DIR=%~dp0"
 cd /d "%APP_DIR%"
 
-REM ── Vygenerování VERSION.txt ───────────────────────────────────────────────
-echo [INFO] Generuji VERSION.txt...
+REM Git hash
 for /f %%G in ('git rev-parse --short HEAD 2^>nul') do set "GIT_HASH=%%G"
 if "%GIT_HASH%"=="" set "GIT_HASH=unknown"
-for /f %%D in ('git log -1 --format^=%%ci 2^>nul') do set "GIT_DATE=%%D"
-set "BUILD_DATE=%date% %time:~0,5%"
-(
-    echo Verze:      %GIT_HASH%
-    echo Commit:     %GIT_DATE%
-    echo Zabaleno:   %BUILD_DATE%
-) > VERSION.txt
-echo [OK] VERSION.txt vytvořen ^(%GIT_HASH%^)
 
-REM ── Aktualizace offline závislostí ────────────────────────────────────────
-echo [INFO] Stahuji závislosti do dependencies/...
+REM Datum pres PowerShell (locale-independent)
+for /f %%D in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd"') do set "BUILD_DATE=%%D"
+for /f %%T in ('powershell -NoProfile -Command "Get-Date -Format HH:mm"') do set "BUILD_TIME=%%T"
+
+REM VERSION.txt
+echo [INFO] Generuji VERSION.txt...
+(echo Verze:    %GIT_HASH%) > VERSION.txt
+(echo Zabaleno: %BUILD_DATE% %BUILD_TIME%) >> VERSION.txt
+echo [OK] VERSION.txt (%GIT_HASH%)
+
+REM Zavislosti
+echo [INFO] Stahuji zavislosti do dependencies/ ...
 if not exist "dependencies" mkdir dependencies
 if exist "venv\Scripts\python.exe" (
     venv\Scripts\python.exe -m pip download -r requirements.txt -d dependencies --quiet
 ) else (
     python -m pip download -r requirements.txt -d dependencies --quiet
 )
-echo [OK] Závislosti aktualizovány
-
-REM ── Vytvoření ZIP balíčku ──────────────────────────────────────────────────
-set "ZIPNAME=certifikaty_deploy_%date:~6,4%%date:~3,2%%date:~0,2%_%GIT_HASH%.zip"
-echo [INFO] Vytvářím %ZIPNAME%...
-
-REM Smazat starý ZIP se stejným názvem (pokud existuje)
-if exist "%ZIPNAME%" del "%ZIPNAME%"
-
-powershell -NoProfile -Command ^
-    "Compress-Archive -Force -Path 'app','static','dependencies','*.py','*.txt','*.bat','*.example' -DestinationPath '%ZIPNAME%'"
-
-if exist "%ZIPNAME%" (
-    for %%A in ("%ZIPNAME%") do set "ZIP_SIZE=%%~zA"
-    set /a "ZIP_MB=%ZIP_SIZE% / 1048576"
-    echo [OK] Balíček vytvořen: %ZIPNAME%
-    echo.
-    echo ── Obsah balíčku ─────────────────────────────────────────
-    echo   Kód aplikace:  app\, static\, *.py
-    echo   Závislosti:    dependencies\  ^(offline pip install^)
-    echo   Skripty:       deploy.bat, update.bat
-    echo   Verze:         VERSION.txt ^(%GIT_HASH%^)
-    echo.
-    echo   NEZAHRNUTO:    instance\  ^(databáze^)
-    echo                  logs\      ^(logy^)
-    echo                  uploads\   ^(nahrané soubory^)
-    echo                  .env       ^(konfigurace^)
-    echo ──────────────────────────────────────────────────────────
-    echo.
-    echo Na cílovém serveru:
-    echo   1. Zkopíruj %ZIPNAME% do složky aplikace
-    echo   2. Spusť jako Administrator:
-    echo      update.bat [NazevAppPoolu] %ZIPNAME%
-    echo.
-    echo Příklad:
-    echo   update.bat CertifikátyPool %ZIPNAME%
+if errorlevel 1 (
+    echo [VAROVANI] Stazeni zavislosti selhalo, pouzivam existujici obsah dependencies/
 ) else (
-    echo [CHYBA] Nepodařilo se vytvořit ZIP!
+    echo [OK] Zavislosti aktualizovany
 )
 
+REM ZIP
+set "ZIPNAME=certifikaty_deploy_%BUILD_DATE%_%GIT_HASH%.zip"
+echo [INFO] Vytvarim %ZIPNAME% ...
+if exist "%ZIPNAME%" del "%ZIPNAME%"
+
+powershell -NoProfile -Command "Compress-Archive -Force -Path 'app','static','dependencies','app.py','config.py','requirements.txt','deploy.bat','update.bat','package.bat','VERSION.txt','DEPLOY.md','.env.example' -DestinationPath '%ZIPNAME%'"
+
+if not exist "%ZIPNAME%" (
+    echo [CHYBA] Nepodarilo se vytvorit ZIP!
+    pause
+    exit /b 1
+)
+
+for /f %%S in ('powershell -NoProfile -Command "[math]::Round((Get-Item ''%ZIPNAME%'').Length / 1MB, 1)"') do set "ZIP_MB=%%S"
+echo [OK] Balicek vytvoren: %ZIPNAME% (%ZIP_MB% MB)
+echo.
+echo Obsah: app\, static\, dependencies\, *.py, *.txt, deploy.bat, update.bat
+echo Vynechano: instance\ (databaze), logs\, uploads\, .env
+echo.
+echo Na serveru:
+echo   update.bat CertifikatyPool %ZIPNAME% evidence_cert
 echo.
 pause

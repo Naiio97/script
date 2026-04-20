@@ -204,7 +204,7 @@ Aby aplikace běžela na pozadí i po restartu serveru, použij **NSSM**.
 
 2. Spusť CMD jako Administrator:
    ```bat
-   nssm install CertifikátyApp
+   nssm install evidence_cert
    ```
 
 3. V GUI nastav:
@@ -215,16 +215,16 @@ Aby aplikace běžela na pozadí i po restartu serveru, použij **NSSM**.
 
 4. Spusť službu:
    ```bat
-   nssm start CertifikátyApp
+   nssm start evidence_cert
    ```
 
 5. Ověř, že služba běží:
    ```bat
-   nssm status CertifikátyApp
+   nssm status evidence_cert
    ```
 
 > **Poznámka:** IIS Application Pool (`CertifikátyPool`) řídí IIS konfiguraci.
-> Windows Service (`CertifikátyApp` přes NSSM) řídí samotný Python/Waitress proces.
+> Windows Service (`evidence_cert` přes NSSM) řídí samotný Python/Waitress proces.
 > Obě věci musí běžet zároveň.
 
 ---
@@ -328,16 +328,16 @@ Zkopíruj ZIP na flash disk.
 
    ```bat
    cd C:\inetpub\certifikaty
-   update.bat CertifikátyPool certifikaty_deploy_20260415_a1b2c3d.zip CertifikátyApp
+   update.bat CertifikátyPool certifikaty_deploy_20260415_a1b2c3d.zip evidence_cert
    ```
 
    | Parametr        | Popis                                     | Příklad               |
    |-----------------|-------------------------------------------|-----------------------|
    | 1. App Pool     | Název IIS Application Poolu               | `CertifikátyPool`     |
    | 2. ZIP soubor   | Název balíčku (nebo vynech — najde sám)   | `certifikaty_deploy_…zip` |
-   | 3. NSSM služba  | Název Windows služby Waitress             | `CertifikátyApp`      |
+   | 3. NSSM služba  | Název Windows služby Waitress             | `evidence_cert`      |
 
-   Název NSSM služby lze vynechat — výchozí hodnota je `CertifikátyApp`.
+   Název NSSM služby lze vynechat — výchozí hodnota je `evidence_cert`.
    Pokud NSSM služba na serveru neexistuje, skript to oznámí a pokračuje.
 
 Skript provede:
@@ -438,7 +438,7 @@ Zkontroluj oba procesy — musí běžet oba:
 
 ```bat
 REM 1. Stav NSSM / Waitress služby
-nssm status CertifikátyApp
+nssm status evidence_cert
 
 REM 2. Stav IIS Application Poolu
 C:\Windows\System32\inetsrv\appcmd.exe list apppool CertifikátyPool
@@ -448,8 +448,8 @@ Ruční restart obou:
 
 ```bat
 REM Restart Waitress
-nssm stop CertifikátyApp
-nssm start CertifikátyApp
+nssm stop evidence_cert
+nssm start evidence_cert
 
 REM Restart IIS pool (po startu Waitressu)
 C:\Windows\System32\inetsrv\appcmd.exe stop apppool /apppool.name:"CertifikátyPool"
@@ -476,13 +476,13 @@ venv\Scripts\python.exe -c "from app import create_app,db; app=create_app(); ctx
 
 ```bat
 REM Zkontroluj stav služby
-nssm status CertifikátyApp
+nssm status evidence_cert
 
 REM Zobraz logy NSSM
-nssm dump CertifikátyApp
+nssm dump evidence_cert
 
 REM Restartuj službu
-nssm restart CertifikátyApp
+nssm restart evidence_cert
 ```
 
 ### Ověření, že Waitress naslouchá na portu 8080
